@@ -1,4 +1,3 @@
-
 call  func1
 call  print
 end

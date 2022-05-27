@@ -1,4 +1,3 @@
-
 mov   a, 11           ; value1
 mov   b, 3            ; value2
 call  mod_func

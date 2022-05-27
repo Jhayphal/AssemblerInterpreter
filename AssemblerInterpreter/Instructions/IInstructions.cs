@@ -1,15 +1,15 @@
 ﻿using AssemblerInterpreter.Processors;
 
-namespace AssemblerInterpreter.Commands
+namespace AssemblerInterpreter.Instructions
 {
-  public interface ICommands<TProcessor, TRegister>
+  public interface IInstructions<TProcessor, TRegister>
     where TProcessor : IProcessor<TRegister>
     where TRegister : struct
   {
     /// <summary>
     /// Commands list.
     /// </summary>
-    Dictionary<string, Action<string[], TProcessor>> Items { get; }
+    Dictionary<string, Action<string[], TProcessor>> Instructions { get; }
     
     /// <summary>
     /// Names of commands that require changing label to address (compiler hint).

@@ -1,4 +1,3 @@
-
 mov   a, 81         ; value1
 mov   b, 153        ; value2
 call  init

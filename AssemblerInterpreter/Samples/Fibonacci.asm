@@ -1,4 +1,3 @@
-
 mov   a, 8            ; value
 mov   b, 0            ; next
 mov   c, 0            ; counter

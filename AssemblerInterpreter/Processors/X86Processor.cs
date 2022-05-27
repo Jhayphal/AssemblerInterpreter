@@ -1,38 +1,36 @@
-﻿using AssemblerInterpreter.Commands;
+﻿using AssemblerInterpreter.Instructions;
 
 namespace AssemblerInterpreter.Processors
 {
-  public sealed class X86Processor : IProcessor<int>
+  public sealed class X86Processor : IProcessor<Int32>
   {
     public Dictionary<string, int> Registers { get; } = new();
-    public Stack<int> ReturnAddresses { get; } = new();
-    public ICommands<IProcessor<int>, int> Supported { get; } = new X86Commands();
+    public Stack<Int32> ReturnAddresses { get; } = new();
+    public IInstructions<IProcessor<Int32>, int> Supported { get; } = new X86Instructions();
     public string? Data { get; set; }
     public int LastCompareResult { get; set; }
-    public int CurrentAddress => address;
-
-    private int address = 0;
+    public int CurrentAddress { get; private set; }
 
     public void RelativeJump(int offset)
     {
-      address += offset;
+      CurrentAddress += offset;
 
-      --address; // for next loop
+      --CurrentAddress; // for next loop
     }
 
     public void GoTo(int address)
     {
-      this.address = address;
+      CurrentAddress = address;
 
-      --this.address; // for next loop
+      --CurrentAddress; // for next loop
     }
 
-    public IProcessor<int> Run(Command[] program)
+    public IProcessor<Int32> Run(Instruction[] program)
     {
       try
       {
-        for (; address < program.Length; ++address)
-          Run(program[address]);
+        for (; CurrentAddress < program.Length; ++CurrentAddress)
+          Run(program[CurrentAddress]);
 
         Data = null;
       }
@@ -46,7 +44,7 @@ namespace AssemblerInterpreter.Processors
       }
       finally
       {
-        address = 0;
+        CurrentAddress = 0;
         LastCompareResult = 0;
         Registers.Clear();
         ReturnAddresses.Clear();
@@ -55,11 +53,11 @@ namespace AssemblerInterpreter.Processors
       return this;
     }
 
-    private void Run(Command operation)
+    private void Run(Instruction instruction)
     {
-      var action = Supported.Items[operation.Name];
+      var action = Supported.Instructions[instruction.Name];
 
-      action(operation.Parameters, this);
+      action(instruction.Parameters, this);
     }
   }
 }

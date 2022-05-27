@@ -1,4 +1,4 @@
-﻿using AssemblerInterpreter.Commands;
+﻿using AssemblerInterpreter.Instructions;
 
 namespace AssemblerInterpreter.Processors
 {
@@ -6,7 +6,7 @@ namespace AssemblerInterpreter.Processors
   {
     Dictionary<string, TRegister> Registers { get; }
     Stack<TRegister> ReturnAddresses { get; }
-    ICommands<IProcessor<TRegister>, TRegister> Supported { get; }
+    IInstructions<IProcessor<TRegister>, TRegister> Supported { get; }
 
     TRegister CurrentAddress { get; }
     string? Data { get; set; }
@@ -14,6 +14,6 @@ namespace AssemblerInterpreter.Processors
 
     void GoTo(TRegister address);
     void RelativeJump(TRegister offset);
-    IProcessor<TRegister> Run(Command[] program);
+    IProcessor<TRegister> Run(Instruction[] program);
   }
 }

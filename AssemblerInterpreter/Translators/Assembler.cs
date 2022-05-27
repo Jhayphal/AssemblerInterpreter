@@ -1,35 +1,32 @@
-﻿using AssemblerInterpreter.Commands;
+﻿using AssemblerInterpreter.Instructions;
 using AssemblerInterpreter.Processors;
 
-namespace AssemblerInterpreter.Compilers
+namespace AssemblerInterpreter.Translators
 {
-  internal sealed class DefaultCompiler<TRegister>
+  internal sealed class Assembler<TRegister>
     where TRegister : struct
   {
     private readonly IProcessor<TRegister> processor;
 
-    private DefaultCompiler(IProcessor<TRegister> processor)
+    public Assembler(IProcessor<TRegister> processor)
     {
       this.processor = processor;
     }
 
-    public static DefaultCompiler<TRegister> Create(IProcessor<TRegister> processor)
-      => new(processor);
-
-    public IEnumerable<Command> Compile(IEnumerable<Command> operations)
+    public IEnumerable<Instruction> Translate(IEnumerable<Instruction> commands)
     {
-      if (!operations.Any(x => x.Label))
-        return operations;
-
-      return RemoveLabels(operations);
+      var program = new List<Instruction>(commands);
+      
+      return program.FindIndex(x => x.Label) < 0
+        ? program
+        : ReplaceLabelsWithAddresses(program);
     }
 
-    private IEnumerable<Command> RemoveLabels(IEnumerable<Command> commands)
+    private IEnumerable<Instruction> ReplaceLabelsWithAddresses(List<Instruction> instructions)
     {
-      var operations = commands.ToList();
       var operationsRequireAddress = processor.Supported.RequireAddress;
 
-      var requireAddressIndexes = operations
+      var requireAddressIndexes = instructions
         .Select((o, i) =>
           new
           {
@@ -42,13 +39,13 @@ namespace AssemblerInterpreter.Compilers
 
       int labelIndex = 0;
 
-      while ((labelIndex = operations.FindIndex(labelIndex, x => x.Label)) >= 0)
+      while ((labelIndex = instructions.FindIndex(labelIndex, x => x.Label)) >= 0)
       {
-        var labelName = operations[labelIndex].Name[..^1];
+        var labelName = instructions[labelIndex].Name[..^1];
 
         for (int i = requireAddressIndexes.Count - 1; i >= 0; --i)
         {
-          var current = operations[requireAddressIndexes[i]];
+          var current = instructions[requireAddressIndexes[i]];
 
           if (string.Equals(current.Parameters[0], labelName, StringComparison.CurrentCultureIgnoreCase))
           {
@@ -58,16 +55,18 @@ namespace AssemblerInterpreter.Compilers
           }
         }
 
-        operations.RemoveAt(labelIndex);
+        instructions.RemoveAt(labelIndex);
 
         for (int i = 0; i < requireAddressIndexes.Count; ++i)
         {
           if (requireAddressIndexes[i] >= labelIndex)
+          {
             --requireAddressIndexes[i];
+          }
         }
       }
 
-      return operations;
+      return instructions;
     }
   }
 }

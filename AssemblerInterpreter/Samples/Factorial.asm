@@ -1,4 +1,3 @@
-
 mov   a, 5
 mov   b, a
 mov   c, a

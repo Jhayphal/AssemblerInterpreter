@@ -1,23 +1,26 @@
 ﻿using System.Text;
 
-namespace AssemblerInterpreter.Commands
+namespace AssemblerInterpreter.Instructions
 {
-  internal static class CommandsParser
+  internal static class CodeParser
   {
-    public static List<Command> Parse(string code)
+    public static List<Instruction> Parse(string code)
     {
       var lines = ToLines(code);
 
       return ParseLines(lines);
     }
 
-    private static List<Command> ParseLines(IEnumerable<string> codeLines)
+    private static IEnumerable<string> ToLines(string code)
+      => code.Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+    private static List<Instruction> ParseLines(IEnumerable<string> codeLines)
     {
-      List<Command> operations = new();
+      List<Instruction> operations = new();
 
       foreach (var line in codeLines)
       {
-        var operation = ParseOperation(line);
+        var operation = ParseInstruction(line);
 
         if (operation != null)
           operations.Add(operation);
@@ -26,13 +29,13 @@ namespace AssemblerInterpreter.Commands
       return operations;
     }
 
-    private static Command? ParseOperation(string line)
+    private static Instruction? ParseInstruction(string line)
     {
       var info = new List<string>();
       var buffer = new StringBuilder();
       var inQuotes = false;
 
-      foreach (var c in line)
+      foreach (var c in line.Trim())
       {
         switch (c)
         {
@@ -53,7 +56,7 @@ namespace AssemblerInterpreter.Commands
             {
               buffer.Append(c);
               info.Add(buffer.ToString());
-              return Command.Create(info);
+              return Create(info);
             }
             else if (inQuotes)
             {
@@ -86,7 +89,7 @@ namespace AssemblerInterpreter.Commands
                 info.Add(buffer.ToString());
               }
 
-              return Command.Create(info);
+              return Create(info);
             }
             break;
 
@@ -101,12 +104,14 @@ namespace AssemblerInterpreter.Commands
         info.Add(buffer.ToString());
       }
 
-      return Command.Create(info);
+      return Create(info);
     }
 
-    private static IEnumerable<string> ToLines(string code)
-      => code
-        .Split(new char[] { '\n' }, StringSplitOptions.RemoveEmptyEntries)
-        .Select(s => s.Trim());
+    private static Instruction? Create(IEnumerable<string> info)
+      => info.Any()
+      ? new Instruction(
+        name: info.First().Trim().ToLower(),
+        parameters: info.Skip(1).Select(s => s.Trim()).ToArray())
+      : null;
   }
 }

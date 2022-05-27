@@ -1,33 +1,34 @@
 ﻿using AssemblerInterpreter.Processors;
-using AssemblerInterpreter.Compilers;
-using AssemblerInterpreter.Commands;
+using AssemblerInterpreter.Translators;
+using AssemblerInterpreter.Instructions;
+using AssemblerInterpreter.Properties;
 
 namespace AssemblerInterpreter
 {
   internal class Program
   {
-    static void Main()
+    private static void Main()
     {
-      IProcessor<int> processor = new X86Processor();
-      DefaultCompiler<int> compiler = DefaultCompiler<int>.Create(processor);
+      IProcessor<Int32> processor = new X86Processor();
+      Assembler<Int32> assembler = new(processor);
 
-      foreach (var code in GetSamples())
+      foreach (var sourceCode in GetSamples())
       {
-        List<Command>? program = CommandsParser.Parse(code);
-        Command[] commands = compiler.Compile(program).ToArray();
-        processor.Run(commands);
+        IEnumerable<Instruction> program = CodeParser.Parse(sourceCode);
+        program = assembler.Translate(program);
+        processor.Run(program.ToArray());
 
         Console.WriteLine(processor.Data);
       }
     }
 
-    static IEnumerable<string> GetSamples()
+    private static IEnumerable<string> GetSamples()
     {
-      const string SamplesFolderName = @"Samples";
+      string samplesFolderName = Resources.SamplesFolderName;
 
-      if (Directory.Exists(SamplesFolderName))
+      if (Directory.Exists(samplesFolderName))
       {
-        foreach (var file in Directory.GetFiles(SamplesFolderName))
+        foreach (var file in Directory.GetFiles(samplesFolderName))
         {
           yield return File.ReadAllText(file);
         }

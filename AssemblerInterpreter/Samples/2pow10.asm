@@ -1,4 +1,3 @@
-
 mov   a, 2            ; value1
 mov   b, 10           ; value2
 mov   c, a            ; temp1

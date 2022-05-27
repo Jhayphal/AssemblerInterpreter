@@ -34,15 +34,15 @@ namespace AssemblerInterpreter.Common
         throw new InvalidOperationException($"Method '{method.Name}' hasnt declaring type.");
       }
 
-      var paramThis = Expression.Constant(instance);
+      var parameterInstance = Expression.Constant(instance);
 
       parametersToPass = methodParams
-          .Select((p, i) => CreateParam(paramsOfDelegate, i, p, queueMissingParams))
+          .Select((parameter, index) => CreateParam(paramsOfDelegate, index, parameter, queueMissingParams))
           .ToArray();
 
       expression = Expression.Lambda<T>
       (
-        Expression.Call(paramThis, method, parametersToPass),
+        Expression.Call(parameterInstance, method, parametersToPass),
         paramsOfDelegate
       );
 
